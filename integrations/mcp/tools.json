@@ -1,0 +1,183 @@
+[
+  {
+    "name": "get_status",
+    "access": "observe",
+    "description": "State of mybench: the device (real myDAQ or simulated), whether remote control may change settings, and every instrument with its run state and one-line summary. Call this first.",
+    "inputSchema": { "type": "object", "properties": {} },
+    "annotations": { "title": "Status", "readOnlyHint": true }
+  },
+  {
+    "name": "describe_instrument",
+    "access": "observe",
+    "description": "Everything about one instrument: its settings (dotted paths such as channel0.voltsPerDiv, current value, allowed values of choices), its live readings, the traces get_trace can read, and its commands. Read it before configure_instrument.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "instrument": { "type": "string", "description": "Instrument id: scope, gen, bode, dsa, dmm, dio, ctr, log, aeq" }
+      },
+      "required": ["instrument"]
+    },
+    "annotations": { "title": "Describe instrument", "readOnlyHint": true }
+  },
+  {
+    "name": "read_measurements",
+    "access": "observe",
+    "description": "Current readings of one instrument (scope: RMS, frequency, peak-to-peak per channel; dsa: fundamental, THD, SINAD, harmonics; bode: cutoff frequencies, margins; dmm: the reading). With fresh=true, waits for new acquisitions first, so the values reflect settings changed just before.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "instrument": { "type": "string" },
+        "fresh": { "type": "boolean", "description": "Wait for two new acquisitions of a running instrument (default false)" },
+        "timeout_s": { "type": "number", "description": "Longest wait with fresh=true (default 5 s)" }
+      },
+      "required": ["instrument"]
+    },
+    "annotations": { "title": "Read measurements", "readOnlyHint": true }
+  },
+  {
+    "name": "get_trace",
+    "access": "observe",
+    "description": "Points of one plotted trace (names from describe_instrument: e.g. scope ch0, dsa spectrum, bode gain/phase), reduced to at most max_points. x and y units are those of the plot (s or Hz; V, dB or degrees).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "instrument": { "type": "string" },
+        "trace": { "type": "string", "description": "Trace name as listed by describe_instrument" },
+        "max_points": { "type": "integer", "description": "Default 100, at most 2000" },
+        "x_min": { "type": "number" },
+        "x_max": { "type": "number" },
+        "peaks": { "type": "boolean", "description": "Keep the largest y of each group of points (spectra) instead of an evenly spaced sample" }
+      },
+      "required": ["instrument", "trace"]
+    },
+    "annotations": { "title": "Get trace", "readOnlyHint": true }
+  },
+  {
+    "name": "open_instrument",
+    "access": "observe",
+    "description": "Shows an instrument's panel in the mybench window (beside=true: in a second pane next to the current one). Changes only what is shown.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "instrument": { "type": "string" },
+        "beside": { "type": "boolean" }
+      },
+      "required": ["instrument"]
+    },
+    "annotations": { "title": "Open instrument", "readOnlyHint": true }
+  },
+  {
+    "name": "capture_screenshot",
+    "access": "observe",
+    "description": "A PNG image of the mybench window as the audience sees it.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "max_width": { "type": "integer", "description": "Scale down to this width in pixels (default 1280)" }
+      }
+    },
+    "annotations": { "title": "Screenshot", "readOnlyHint": true }
+  },
+  {
+    "name": "stop_all",
+    "access": "observe",
+    "description": "Stops every instrument and returns the outputs to their safe state (AO at 0 V, DIO as inputs). Always allowed.",
+    "inputSchema": { "type": "object", "properties": {} },
+    "annotations": { "title": "Stop all", "readOnlyHint": false, "destructiveHint": false, "idempotentHint": true }
+  },
+  {
+    "name": "configure_instrument",
+    "access": "control",
+    "description": "Changes settings of one instrument as if the user turned the knobs. Keys are the setting paths of describe_instrument (e.g. {\"timePerDiv\": 0.001, \"channel0.voltsPerDiv\": 0.5, \"triggerType\": \"Edge\"}); choices by name. The app clamps values to the device limits; the reply gives the values actually applied and the keys it refused.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "instrument": { "type": "string" },
+        "settings": { "type": "object", "description": "{ path: value }" }
+      },
+      "required": ["instrument", "settings"]
+    },
+    "annotations": { "title": "Configure instrument", "readOnlyHint": false, "destructiveHint": false, "idempotentHint": true }
+  },
+  {
+    "name": "run_instrument",
+    "access": "control",
+    "description": "Run (continuous), single (one acquisition; waits for it unless wait=false) or stop one instrument.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "instrument": { "type": "string" },
+        "action": { "type": "string", "enum": ["run", "single", "stop"] },
+        "wait": { "type": "boolean", "description": "single: wait until the acquisition is done (default true)" },
+        "timeout_s": { "type": "number", "description": "Longest wait (default 30 s)" }
+      },
+      "required": ["instrument", "action"]
+    },
+    "annotations": { "title": "Run instrument", "readOnlyHint": false, "destructiveHint": false }
+  },
+  {
+    "name": "set_generator",
+    "access": "control",
+    "description": "Function generator, one output channel: waveform, frequency, amplitude (V peak-to-peak), offset, duty cycle, and the output switch. Channel 0 is AO 0, channel 1 is AO 1 (or AudioOutput L/R when the generator uses the audio outputs). Limits: 0.2 Hz to 20 kHz on AO, amplitude at most 10 Vpp, offset within ±5 V; the app clamps beyond.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": { "type": "integer", "enum": [0, 1] },
+        "waveform": { "type": "string", "enum": ["sine", "square", "triangle", "dc", "off"] },
+        "frequency_hz": { "type": "number" },
+        "amplitude_vpp": { "type": "number" },
+        "offset_v": { "type": "number", "description": "DC offset, or the level for waveform dc" },
+        "duty_cycle_percent": { "type": "number" },
+        "output": { "type": "boolean", "description": "Output on (default true)" }
+      },
+      "required": ["channel"]
+    },
+    "annotations": { "title": "Set generator", "readOnlyHint": false, "destructiveHint": false }
+  },
+  {
+    "name": "run_bode",
+    "access": "control",
+    "description": "Bode analyzer sweep: drives the stimulus output, measures gain and phase between the two inputs at each frequency, waits for the sweep (a few seconds to a minute) and returns cutoff (-3 dB) frequencies, maximum gain, margins and a table of points. Shows the Bode panel. Wiring (real myDAQ): AO 0 to the circuit input and to AI 0+, the circuit output to AI 1+, AI 0-, AI 1- and the circuit ground to AGND. The simulated myDAQ has an RC low-pass wired in (see set_simulator).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "start_hz": { "type": "number", "description": "Default: current setting" },
+        "stop_hz": { "type": "number" },
+        "steps_per_decade": { "type": "integer" },
+        "amplitude_v": { "type": "number", "description": "Stimulus peak amplitude" },
+        "points": { "type": "integer", "description": "Rows in the returned table (default 25)" },
+        "show": { "type": "boolean", "description": "Open the Bode panel (default true)" },
+        "timeout_s": { "type": "number", "description": "Longest wait (default: planned sweep time + 30 s)" }
+      }
+    },
+    "annotations": { "title": "Bode sweep", "readOnlyHint": false, "destructiveHint": false }
+  },
+  {
+    "name": "invoke_command",
+    "access": "control",
+    "description": "Runs one of an instrument's commands (the command palette entries listed by describe_instrument, e.g. scope autoscale).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "instrument": { "type": "string" },
+        "command": { "type": "string" },
+        "argument": { "description": "For commands that take a value" }
+      },
+      "required": ["instrument", "command"]
+    },
+    "annotations": { "title": "Invoke command", "readOnlyHint": false, "destructiveHint": false }
+  },
+  {
+    "name": "set_simulator",
+    "access": "control",
+    "description": "Simulated myDAQ only (demo mode). The simulator wires AO 0 straight to AI 0 and through an RC low-pass (default cutoff 1 kHz) to AI 1, so the scope, the spectrum analyzer and the Bode analyzer see the generator. Sets the RC cutoff (1 Hz to 50 kHz) and the input noise (V rms, at most 0.1). Refused with a real device.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "rc_cutoff_hz": { "type": "number", "description": "Corner frequency of the simulated RC low-pass" },
+        "noise_rms_v": { "type": "number" }
+      }
+    },
+    "annotations": { "title": "Simulator", "readOnlyHint": false, "destructiveHint": false }
+  }
+]

@@ -1,0 +1,3 @@
+[submodule "libmydaq"]
+	path = libmydaq
+	url = https://github.com/spunwave/libmybench.git

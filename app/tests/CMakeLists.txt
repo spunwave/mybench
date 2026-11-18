@@ -1,0 +1,25 @@
+# QuickTest of the shell's QML (the MyBench.App module) with fake instruments.
+qt_add_executable(tst_shell tst_shell.cpp)
+target_link_libraries(tst_shell PRIVATE mybench_app mybench_appplugin mybench_ui Qt6::QuickTest Qt6::QuickControls2)
+target_compile_definitions(tst_shell PRIVATE QUICK_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+# The fake instruments' module Test.Fake: its Overview tile (qrc:/qt/qml/Test/Fake/FakeTile.qml).
+qt_add_resources(tst_shell tst_shell_fake PREFIX /qt/qml/Test/Fake BASE fake FILES fake/FakeTile.qml)
+if(NOT MSVC)
+    target_compile_options(tst_shell PRIVATE -Wall -Wextra)
+endif()
+add_test(NAME shell_qml COMMAND tst_shell -import ${CMAKE_BINARY_DIR}/qml)
+set_tests_properties(shell_qml PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;MYBENCH_NO_USB=1")
+
+# The key values (sidebar, at most 18 characters) and the setup lines (Overview, at most 32) of every instrument.
+qt_add_executable(tst_keyvalues tst_keyvalues.cpp)
+target_link_libraries(tst_keyvalues PRIVATE Qt6::Test mybench_ui)
+foreach(id IN LISTS MYBENCH_BUILT_INSTRUMENTS)
+    target_link_libraries(tst_keyvalues PRIVATE mybench_instrument_${id})
+    target_include_directories(tst_keyvalues PRIVATE ${CMAKE_SOURCE_DIR}/instruments/${id})
+endforeach()
+target_link_options(tst_keyvalues PRIVATE $<$<CXX_COMPILER_ID:AppleClang>:LINKER:-no_warn_duplicate_libraries>)
+if(NOT MSVC)
+    target_compile_options(tst_keyvalues PRIVATE -Wall -Wextra)
+endif()
+add_test(NAME keyvalues COMMAND tst_keyvalues)
+set_tests_properties(keyvalues PROPERTIES TIMEOUT 120 ENVIRONMENT "MYBENCH_NO_USB=1;QT_QPA_PLATFORM=offscreen")
