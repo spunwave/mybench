@@ -1,0 +1,3 @@
+[submodule "libmybench"]
+	path = libmybench
+	url = https://github.com/spunwave/libmybench.git

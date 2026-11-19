@@ -1,0 +1,20 @@
+# Build trees and editor/tool caches
+build*/
+/compile_commands.json
+.cache/
+.vscode/
+.idea/
+*.user
+__pycache__/
+*.pyc
+.DS_Store
+
+# Flatpak builder state
+.flatpak-builder/
+flatpak-repo/
+*.flatpak
+
+# Local packaging output
+/package/
+*.dmg
+*.AppImage
