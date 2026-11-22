@@ -21,7 +21,7 @@ endif()
 if(NOT EXISTS "${MYBENCH_LIBMYBENCH_SOURCE_DIR}/CMakeLists.txt")
     message(FATAL_ERROR
         "libmybench sources not found in ${MYBENCH_LIBMYBENCH_SOURCE_DIR}.\n"
-        "The USB backend needs the private repository spunwave/libmybench (ask for access), "
+        "The USB backend needs the private repository spunwave/mybench-ni (ask for access), "
         "checked out as the libmybench/ submodule:\n"
         "    git submodule update --init\n"
         "(or clone with git clone --recursive). Without it, configure with "
