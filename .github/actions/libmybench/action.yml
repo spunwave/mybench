@@ -43,8 +43,8 @@ runs:
         trap 'ssh-agent -k > /dev/null' EXIT
         printf '%s\n' "$DEPLOY_KEY" | ssh-add - 2> /dev/null
         # .gitmodules has the HTTPS URL: fetch it over SSH with the deploy key instead.
-        git config --global url."git@github.com:spunwave/libmybench.git".insteadOf "https://github.com/spunwave/libmybench.git"
+        git config --global url."git@github.com:spunwave/mybench-ni.git".insteadOf "https://github.com/spunwave/mybench-ni.git"
         git submodule update --init libmybench
-        git config --global --unset-all url."git@github.com:spunwave/libmybench.git".insteadOf
+        git config --global --unset-all url."git@github.com:spunwave/mybench-ni.git".insteadOf
         git -C libmybench log -1 --format='libmybench %h %s'
         echo "MYBENCH_USB_ARGS=" >> "$GITHUB_ENV"
