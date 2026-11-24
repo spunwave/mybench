@@ -67,10 +67,10 @@ if(MYBENCH_TEST_LOG_DIR)
     endfunction()
 endif()
 
-# The driver library behind the USB backend: a closed component in a private submodule
-# (cmake/libmybench.cmake). MYBENCH_WITH_USB=OFF builds the simulator only.
+# The driver library behind the USB backend: mybench-ni, a closed component that is optional
+# (cmake/mybench-ni.cmake). Without it, or with MYBENCH_WITH_USB=OFF, the build has the simulator only.
 if(MYBENCH_WITH_USB)
-    include(cmake/libmybench.cmake)
+    include(cmake/mybench-ni.cmake)
 endif()
 add_subdirectory(core)
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ui/CMakeLists.txt)

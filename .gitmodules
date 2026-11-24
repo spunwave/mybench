@@ -1,3 +1,11 @@
+# libmybench: the open device library (MPL-2.0), public.
 [submodule "libmybench"]
 	path = libmybench
+	url = https://github.com/spunwave/libmybench.git
+# mybench-ni: the closed myDAQ driver, in a private repository. Not needed to build MYBENCH
+# (without it the build has the simulated myDAQ only), so clones skip it. With access:
+#   git submodule update --init --checkout mybench-ni
+[submodule "mybench-ni"]
+	path = mybench-ni
 	url = https://github.com/spunwave/mybench-ni.git
+	update = none

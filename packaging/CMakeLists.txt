@@ -130,7 +130,7 @@ else()
     install(TARGETS mybench RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT app)
 endif()
 
-# The driver library (the submodule, or a binary SDK) is a shared library that ships with the
+# The driver library (mybench-ni from its sources or a binary SDK) is a shared library that ships with the
 # application. macOS: in mybench.app/Contents/Frameworks (install name @rpath/libmybench.dylib, the
 # executable's rpath @executable_path/../Frameworks), placed before macdeployqt, which then also
 # rewrites its libusb reference (MYBENCH_BUNDLED_LIBS), and before the signature. Linux and
@@ -288,9 +288,9 @@ else()
 endif()
 install(FILES ${PROJECT_SOURCE_DIR}/LICENSE ${PROJECT_SOURCE_DIR}/LICENSE-EXCEPTION.md
         DESTINATION ${_mybench_licence_dir} COMPONENT app)
-if(MYBENCH_WITH_USB AND libmybench_LICENSE_FILE AND EXISTS "${libmybench_LICENSE_FILE}")
-    install(FILES ${libmybench_LICENSE_FILE} DESTINATION ${_mybench_licence_dir}
-            RENAME LICENSE-libmybench.md COMPONENT app)
+if(MYBENCH_WITH_USB AND MYBENCH_NI_LICENSE_FILE AND EXISTS "${MYBENCH_NI_LICENSE_FILE}")
+    install(FILES ${MYBENCH_NI_LICENSE_FILE} DESTINATION ${_mybench_licence_dir}
+            RENAME LICENSE-mybench-ni.md COMPONENT app)
 endif()
 
 # --- CPack -----------------------------------------------------------------------------------
@@ -374,7 +374,7 @@ else()
     set(CPACK_DEBIAN_PACKAGE_CONTROL_STRICT_PERMISSION ON)
     # Fedora / openSUSE. Qt >= 6.9: Fedora 42+.
     set(CPACK_RPM_FILE_NAME RPM-DEFAULT)
-    set(CPACK_RPM_PACKAGE_LICENSE "GPL-3.0-or-later AND LicenseRef-libmybench")
+    set(CPACK_RPM_PACKAGE_LICENSE "GPL-3.0-or-later AND LicenseRef-mybench-ni")
     set(CPACK_RPM_PACKAGE_GROUP "Applications/Engineering")
     set(CPACK_RPM_PACKAGE_URL "${MYBENCH_HOMEPAGE}")
     set(CPACK_RPM_PACKAGE_REQUIRES "qt6-qtdeclarative >= 6.9, qt6-qtsvg >= 6.9")
