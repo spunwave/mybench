@@ -1,12 +1,13 @@
-# Checks out the private libmybench submodule (path libmybench/) over SSH with the read-only deploy
-# key in the LIBMYDAQ_DEPLOY_KEY secret: GITHUB_TOKEN cannot read another private repository. Use
-# after actions/checkout. Without the key (pull requests from forks): an error when `required`,
-# otherwise MYBENCH_USB_ARGS=-DMYBENCH_WITH_USB=OFF (simulated myDAQ only).
-name: libmybench submodule
-description: Fetch the private libmybench submodule with the read-only deploy key
+# Checks out the closed myDAQ driver (submodule mybench-ni/, private repository spunwave/mybench-ni)
+# over SSH with the read-only deploy key in the LIBMYDAQ_DEPLOY_KEY secret: GITHUB_TOKEN cannot read
+# another private repository. Use after actions/checkout. Sets MYBENCH_NI_REQUIRED=ON, so CMake fails
+# instead of quietly building without the driver. Without the key (pull requests from forks): an
+# error when `required`, otherwise MYBENCH_USB_ARGS=-DMYBENCH_WITH_USB=OFF (simulated myDAQ only).
+name: mybench-ni driver
+description: Fetch the closed mybench-ni driver submodule with the read-only deploy key
 inputs:
   deploy-key:
-    description: Private half of the libmybench deploy key (secrets.LIBMYDAQ_DEPLOY_KEY)
+    description: Private half of the mybench-ni deploy key (secrets.LIBMYDAQ_DEPLOY_KEY)
     required: true
   required:
     description: Fail without the key instead of building the simulator only
@@ -22,7 +23,7 @@ runs:
         set -euo pipefail
         if [ -z "$DEPLOY_KEY" ]; then
           if [ "$REQUIRED" = true ]; then
-            echo "::error::LIBMYDAQ_DEPLOY_KEY is not available: cannot fetch the private libmybench"
+            echo "::error::LIBMYDAQ_DEPLOY_KEY is not available: cannot fetch the closed mybench-ni driver"
             exit 1
           fi
           echo "::warning::no LIBMYDAQ_DEPLOY_KEY: building with the simulated myDAQ only"
@@ -44,7 +45,9 @@ runs:
         printf '%s\n' "$DEPLOY_KEY" | ssh-add - 2> /dev/null
         # .gitmodules has the HTTPS URL: fetch it over SSH with the deploy key instead.
         git config --global url."git@github.com:spunwave/mybench-ni.git".insteadOf "https://github.com/spunwave/mybench-ni.git"
-        git submodule update --init libmybench
+        # --checkout: .gitmodules says update = none, so that other clones skip this private repository.
+        git submodule update --init --checkout mybench-ni
         git config --global --unset-all url."git@github.com:spunwave/mybench-ni.git".insteadOf
-        git -C libmybench log -1 --format='libmybench %h %s'
+        git -C mybench-ni log -1 --format='mybench-ni %h %s'
         echo "MYBENCH_USB_ARGS=" >> "$GITHUB_ENV"
+        echo "MYBENCH_NI_REQUIRED=ON" >> "$GITHUB_ENV"

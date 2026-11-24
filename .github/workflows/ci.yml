@@ -1,6 +1,6 @@
 # Build and test mybench on macOS, Linux and Windows.
 # Tests never touch hardware: MYBENCH_NO_USB=1. The private driver submodule is fetched with the
-# read-only deploy key (.github/actions/libmybench); without it (forks) the build is simulator-only.
+# read-only deploy key (.github/actions/mybench-ni); without it (forks) the build is simulator-only.
 name: CI
 
 on:
@@ -54,8 +54,8 @@ jobs:
             qt-arch: win64_msvc2022_64
     steps:
       - uses: actions/checkout@v4
-      - name: libmybench (private submodule)
-        uses: ./.github/actions/libmybench
+      - name: mybench-ni (closed driver, private submodule)
+        uses: ./.github/actions/mybench-ni
         with:
           deploy-key: ${{ secrets.LIBMYDAQ_DEPLOY_KEY }}
           required: false
@@ -205,8 +205,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: libmybench (private submodule)
-        uses: ./.github/actions/libmybench
+      - name: mybench-ni (closed driver, private submodule)
+        uses: ./.github/actions/mybench-ni
         with:
           deploy-key: ${{ secrets.LIBMYDAQ_DEPLOY_KEY }}
           required: false
@@ -221,5 +221,38 @@ jobs:
           sudo apt-get install -y --no-install-recommends ninja-build spirv-tools pkg-config libusb-1.0-0-dev \
             libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libfontconfig1-dev libxcb-cursor0 xvfb
       - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_PREFIX_PATH=$QT_ROOT_DIR" $MYBENCH_USB_ARGS
+      - run: cmake --build build --parallel
+      - run: xvfb-run -a ctest --test-dir build --label-exclude hw --parallel 4 --timeout 300
+
+  # What anyone outside spunwave gets: a recursive clone, which skips the private mybench-ni
+  # submodule (update = none in .gitmodules), and the default configure: simulated myDAQ only.
+  public-sources:
+    name: Linux (public sources only)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - name: Only public submodules were checked out
+        run: |
+          git submodule status
+          test -f libmybench/CMakeLists.txt
+          test -z "$(ls -A mybench-ni)"
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: "6.11.3"
+          arch: linux_gcc_64
+          modules: qtshadertools qtmultimedia
+          cache: true
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ninja-build spirv-tools pkg-config libusb-1.0-0-dev \
+            libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libfontconfig1-dev libxcb-cursor0 xvfb
+      - name: Configure with the defaults
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_PREFIX_PATH=$QT_ROOT_DIR" 2>&1 | tee configure.log
+          # CMake wraps warnings: join the lines before looking for the message.
+          tr -s ' \n' ' ' < configure.log | grep -q "building with the simulated myDAQ only"
       - run: cmake --build build --parallel
       - run: xvfb-run -a ctest --test-dir build --label-exclude hw --parallel 4 --timeout 300

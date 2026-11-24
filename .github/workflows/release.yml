@@ -33,8 +33,8 @@ jobs:
       MACOSX_DEPLOYMENT_TARGET: "14.0"
     steps:
       - uses: actions/checkout@v4
-      - name: libmybench (private submodule)
-        uses: ./.github/actions/libmybench
+      - name: mybench-ni (closed driver, private submodule)
+        uses: ./.github/actions/mybench-ni
         with:
           deploy-key: ${{ secrets.LIBMYDAQ_DEPLOY_KEY }}
       - uses: jurplel/install-qt-action@v4
@@ -84,8 +84,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - name: libmybench (private submodule)
-        uses: ./.github/actions/libmybench
+      - name: mybench-ni (closed driver, private submodule)
+        uses: ./.github/actions/mybench-ni
         with:
           deploy-key: ${{ secrets.LIBMYDAQ_DEPLOY_KEY }}
       - uses: jurplel/install-qt-action@v4
@@ -116,8 +116,8 @@ jobs:
       - name: git (the checkout must be a clone for the submodule)
         run: apt-get update && apt-get install -y --no-install-recommends git openssh-client ca-certificates
       - uses: actions/checkout@v4
-      - name: libmybench (private submodule)
-        uses: ./.github/actions/libmybench
+      - name: mybench-ni (closed driver, private submodule)
+        uses: ./.github/actions/mybench-ni
         with:
           deploy-key: ${{ secrets.LIBMYDAQ_DEPLOY_KEY }}
       - name: Build dependencies (distribution Qt)
@@ -153,8 +153,8 @@ jobs:
       - name: git (the checkout must be a clone for the submodule)
         run: dnf install -y git-core openssh-clients
       - uses: actions/checkout@v4
-      - name: libmybench (private submodule)
-        uses: ./.github/actions/libmybench
+      - name: mybench-ni (closed driver, private submodule)
+        uses: ./.github/actions/mybench-ni
         with:
           deploy-key: ${{ secrets.LIBMYDAQ_DEPLOY_KEY }}
       - name: Build dependencies (distribution Qt)
@@ -196,8 +196,8 @@ jobs:
           rm -rf /host-free/android/* /host-free/dotnet/* /host-free/ghc/* /host-free/toolcache/*
           df -h / | tail -1
       - uses: actions/checkout@v4
-      - name: libmybench (private submodule)
-        uses: ./.github/actions/libmybench
+      - name: mybench-ni (closed driver, private submodule)
+        uses: ./.github/actions/mybench-ni
         with:
           deploy-key: ${{ secrets.LIBMYDAQ_DEPLOY_KEY }}
       - name: Bundle name
@@ -229,8 +229,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - name: libmybench (private submodule)
-        uses: ./.github/actions/libmybench
+      - name: mybench-ni (closed driver, private submodule)
+        uses: ./.github/actions/mybench-ni
         with:
           deploy-key: ${{ secrets.LIBMYDAQ_DEPLOY_KEY }}
       - uses: jurplel/install-qt-action@v4
