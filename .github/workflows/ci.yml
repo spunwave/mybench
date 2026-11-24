@@ -252,6 +252,7 @@ jobs:
       - name: Configure with the defaults
         run: |
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_PREFIX_PATH=$QT_ROOT_DIR" 2>&1 | tee configure.log
-          grep -q "building with the simulated myDAQ only" configure.log
+          # CMake wraps warnings: join the lines before looking for the message.
+          tr -s ' \n' ' ' < configure.log | grep -q "building with the simulated myDAQ only"
       - run: cmake --build build --parallel
       - run: xvfb-run -a ctest --test-dir build --label-exclude hw --parallel 4 --timeout 300
